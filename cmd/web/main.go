@@ -1,17 +1,20 @@
-// @title User Management API
+// @title PetStore API
 // @version 1.0
-// @description This is a sample API server for managing users.
+// @description This is a sample API server for petStores.
 // @host localhost:8080
 // @BasePath /
 // @schemes http
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 package main
 
 import (
-	_ "repo/docs"
-	"repo/internal/app"
-	"repo/internal/config"
-	"repo/internal/server"
-	"repo/internal/shutdown"
+	_ "petstore/docs"
+	"petstore/internal/app"
+	"petstore/internal/config"
+	"petstore/internal/server"
+	"petstore/internal/shutdown"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"log"
-	"repo/internal/config"
+	"petstore/internal/config"
 )
 
 func NewPostgres(cfg *config.Config) *pgxpool.Pool {

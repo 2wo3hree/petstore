@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"repo/internal/server"
+	"petstore/internal/server"
 	"syscall"
 	"time"
 )

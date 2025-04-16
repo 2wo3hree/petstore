@@ -3,18 +3,18 @@ package app
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"repo/internal/config"
-	"repo/internal/db"
-	"repo/internal/handler"
-	"repo/internal/repository/postgres"
-	"repo/internal/responder"
-	"repo/internal/router"
-	"repo/internal/service"
+	"petstore/internal/config"
+	"petstore/internal/db"
+	"petstore/internal/handler"
+	"petstore/internal/repository/postgres"
+	"petstore/internal/responder"
+	"petstore/internal/router"
+	"petstore/internal/service"
 )
 
 type App struct {
-	Router   *chi.Mux
-	Handlers *handler.UserHandler
+	Router *chi.Mux
+	//JWTAuth *jwtauth.JWTAuth
 }
 
 func NewApp(cfg *config.Config) *App {
@@ -27,22 +27,30 @@ func NewApp(cfg *config.Config) *App {
 	db.RunMigrations(dbURL)
 
 	// init repo
-	userRepo := postgres.NewUserRepository(pool)
+	userRepo := postgres.NewUserRepo(pool)
+	petRepo := postgres.NewPetRepo(pool)
+	orderRepo := postgres.NewOrderRepo(pool)
 
 	// init service
-	s := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo)
+	petService := service.NewPetService(petRepo)
+	orderService := service.NewOrderService(orderRepo)
 
 	// init responder
 	resp := responder.NewJSONResponder()
 
 	// init handlers
-	h := handler.NewUserHandler(s, resp)
+	userHandler := handler.NewUserHandler(userService, resp)
+	petHandler := handler.NewPetHandler(petService, resp)
+	orderHandler := handler.NewOrderHandler(orderService, resp)
+
+	//auth.InitJWT()
 
 	// init router
-	r := router.SetupRouter(h)
+	r := router.SetupRouter(petHandler, userHandler, orderHandler, userService)
 
 	return &App{
-		Router:   r,
-		Handlers: h,
+		Router: r,
+		//JWTAuth: auth.TokenAuth,
 	}
 }

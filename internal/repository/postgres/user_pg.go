@@ -3,66 +3,45 @@ package postgres
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"repo/internal/model"
-	"repo/internal/repository"
+	"petstore/internal/models"
+	"petstore/internal/repository"
 )
 
 type userRepo struct {
 	db *pgxpool.Pool
 }
 
-func NewUserRepository(db *pgxpool.Pool) repository.UserRepository {
+func NewUserRepo(db *pgxpool.Pool) repository.UserRepository {
 	return &userRepo{db: db}
 }
 
-func (u *userRepo) Create(ctx context.Context, user model.User) error {
-	query := `INSERT INTO users (name, email) VALUES ($1, $2)`
-	_, err := u.db.Exec(ctx, query, user.Name, user.Email)
+func (r *userRepo) Create(ctx context.Context, user models.User) error {
+	query := `INSERT INTO users (id, username, first_name, last_name, email, password, phone, user_status)
+			  VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`
+	_, err := r.db.Exec(ctx, query, user.ID, user.Username, user.FirstName, user.LastName,
+		user.Email, user.Password, user.Phone, user.UserStatus)
 	return err
 }
 
-func (u *userRepo) GetByID(ctx context.Context, id string) (model.User, error) {
-	var user model.User
-	query := `SELECT id, name, email FROM users WHERE id = $1 AND deleted_at IS NULL`
-	err := u.db.QueryRow(ctx, query, id).Scan(&user.ID, &user.Name, &user.Email)
+func (r *userRepo) GetByUsername(ctx context.Context, username string) (models.User, error) {
+	query := `SELECT id, username, first_name, last_name, email, password, phone, user_status FROM users WHERE username=$1`
+	row := r.db.QueryRow(ctx, query, username)
+
+	var user models.User
+	err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName,
+		&user.Email, &user.Password, &user.Phone, &user.UserStatus)
 	return user, err
 }
 
-func (u *userRepo) Update(ctx context.Context, user model.User) error {
-	query := `UPDATE users SET name = $1, email = $2 WHERE id = $3 AND deleted_at IS NULL`
-	_, err := u.db.Exec(ctx, query, user.Name, user.Email, user.ID)
+func (r *userRepo) Delete(ctx context.Context, username string) error {
+	query := `DELETE FROM users WHERE username=$1`
+	_, err := r.db.Exec(ctx, query, username)
 	return err
 }
 
-func (u *userRepo) Delete(ctx context.Context, id string) error {
-	query := `UPDATE users SET deleted_at = NOW() WHERE id = $1`
-	_, err := u.db.Exec(ctx, query, id)
+func (r *userRepo) Update(ctx context.Context, username string, updated models.User) error {
+	query := `UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE username = $4`
+
+	_, err := r.db.Exec(ctx, query, updated.FirstName, updated.LastName, updated.Email, username)
 	return err
-}
-
-func (u *userRepo) List(ctx context.Context, limit, offset int) ([]model.User, int, error) {
-	query := `SELECT id, name, email, deleted_at FROM users WHERE deleted_at IS NULL ORDER BY id LIMIT $1 OFFSET $2`
-	rows, err := u.db.Query(ctx, query, limit, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer rows.Close()
-
-	var users []model.User
-	for rows.Next() {
-		var user model.User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.DeletedAt); err != nil {
-			return nil, 0, err
-		}
-		users = append(users, user)
-	}
-
-	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
-	var count int
-	err = u.db.QueryRow(ctx, countQuery).Scan(&count)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return users, count, nil
 }
