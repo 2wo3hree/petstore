@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"petstore/internal/config"
 	"petstore/internal/db"
+	"petstore/internal/facade"
 	"petstore/internal/handler"
 	"petstore/internal/repository/postgres"
 	"petstore/internal/responder"
@@ -26,28 +27,39 @@ func NewApp(cfg *config.Config) *App {
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 	db.RunMigrations(dbURL)
 
+	db.SeedDatabase(pool)
+
 	// init repo
 	userRepo := postgres.NewUserRepo(pool)
-	petRepo := postgres.NewPetRepo(pool)
-	orderRepo := postgres.NewOrderRepo(pool)
-
+	authorRepo := postgres.NewAuthorRepo(pool)
+	bookRepo := postgres.NewBookRepo(pool)
+	rentalRepo := postgres.NewRentalRepo(pool)
 	// init service
 	userService := service.NewUserService(userRepo)
-	petService := service.NewPetService(petRepo)
-	orderService := service.NewOrderService(orderRepo)
+	authorService := service.NewAuthorService(authorRepo)
+	bookService := service.NewBookService(bookRepo)
+	rentalService := service.NewRentalService(rentalRepo, userRepo, bookRepo)
+
+	// init super service (суперсервис)
+	libraryService := service.NewLibraryService(userService, bookService, rentalService, authorService)
+
+	// init facade (фасад работает поверх суперсервиса)
+	libraryFacade := facade.NewFacade(libraryService)
 
 	// init responder
 	resp := responder.NewJSONResponder()
 
 	// init handlers
 	userHandler := handler.NewUserHandler(userService, resp)
-	petHandler := handler.NewPetHandler(petService, resp)
-	orderHandler := handler.NewOrderHandler(orderService, resp)
+	authorHandler := handler.NewAuthorHandler(authorService, resp)
+	bookHandler := handler.NewBookHandler(bookService, resp)
+
+	facadeHandler := handler.NewFacadeHandler(libraryFacade, resp)
 
 	//auth.InitJWT()
 
 	// init router
-	r := router.SetupRouter(petHandler, userHandler, orderHandler, userService)
+	r := router.SetupRouter(userHandler, authorHandler, bookHandler, facadeHandler)
 
 	return &App{
 		Router: r,

@@ -1,71 +1,80 @@
 basePath: /
 definitions:
-  petstore_internal_models.Category:
+  petstore_internal_models.Author:
     properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
-  petstore_internal_models.Order:
-    properties:
-      complete:
-        type: boolean
-      id:
-        type: integer
-      petId:
-        type: integer
-      quantity:
-        type: integer
-      shipDate:
-        type: string
-      status:
-        type: string
-    type: object
-  petstore_internal_models.Pet:
-    properties:
-      category:
-        $ref: '#/definitions/petstore_internal_models.Category'
-      id:
-        type: integer
-      name:
-        type: string
-      photoUrls:
+      books:
         items:
-          type: string
+          $ref: '#/definitions/petstore_internal_models.Book'
         type: array
-      status:
-        type: string
-      tags:
-        items:
-          $ref: '#/definitions/petstore_internal_models.Tag'
-        type: array
-    type: object
-  petstore_internal_models.Tag:
-    properties:
       id:
         type: integer
       name:
         type: string
+    type: object
+  petstore_internal_models.AuthorCount:
+    properties:
+      author:
+        $ref: '#/definitions/petstore_internal_models.Author'
+      count:
+        type: integer
+    type: object
+  petstore_internal_models.Book:
+    properties:
+      author:
+        $ref: '#/definitions/petstore_internal_models.Author'
+      author_id:
+        type: integer
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+  petstore_internal_models.CreateAuthorRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  petstore_internal_models.CreateBookRequest:
+    properties:
+      author_id:
+        type: integer
+      title:
+        type: string
+    type: object
+  petstore_internal_models.CreateUserRequest:
+    properties:
+      name:
+        example: Иван Иванов
+        type: string
+    type: object
+  petstore_internal_models.ListBooksResponse:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/petstore_internal_models.Book'
+        type: array
+      total:
+        type: integer
+    type: object
+  petstore_internal_models.ListUsersResponse:
+    properties:
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/petstore_internal_models.User'
+        type: array
     type: object
   petstore_internal_models.User:
     properties:
-      email:
-        type: string
-      firstName:
-        type: string
       id:
         type: integer
-      lastName:
+      name:
         type: string
-      password:
-        type: string
-      phone:
-        type: string
-      userStatus:
-        type: integer
-      username:
-        type: string
+      rented_books:
+        items:
+          $ref: '#/definitions/petstore_internal_models.Book'
+        type: array
     type: object
 host: localhost:8080
 info:
@@ -74,129 +83,19 @@ info:
   title: PetStore API
   version: "1.0"
 paths:
-  /pet:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Pet object
-        in: body
-        name: pet
-        required: true
-        schema:
-          $ref: '#/definitions/petstore_internal_models.Pet'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - ApiKeyAuth: []
-      summary: Add a new pet to the store
-      tags:
-      - pet
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Pet object
-        in: body
-        name: pet
-        required: true
-        schema:
-          $ref: '#/definitions/petstore_internal_models.Pet'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - ApiKeyAuth: []
-      summary: Update an existing pet
-      tags:
-      - pet
-  /pet/{petId}:
-    delete:
-      parameters:
-      - description: Pet ID
-        in: path
-        name: petId
-        required: true
-        type: integer
-      responses:
-        "204":
-          description: No Content
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Deletes a pet
-      tags:
-      - pet
+  /authors:
     get:
-      parameters:
-      - description: Pet ID
-        in: path
-        name: petId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/petstore_internal_models.Pet'
-      security:
-      - ApiKeyAuth: []
-      summary: Find pet by ID
-      tags:
-      - pet
-    post:
       consumes:
       - application/json
       parameters:
-      - description: Pet ID
-        in: path
-        name: petId
-        required: true
-        type: integer
-      - description: Updated pet object
-        in: body
-        name: pet
-        required: true
-        schema:
-          $ref: '#/definitions/petstore_internal_models.Pet'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - ApiKeyAuth: []
-      summary: Update pet by ID
-      tags:
-      - pet
-  /pet/findByStatus:
-    get:
-      parameters:
-      - description: Status value
+      - description: Max items
         in: query
-        name: status
-        required: true
-        type: string
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -204,71 +103,58 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/petstore_internal_models.Pet'
+              $ref: '#/definitions/petstore_internal_models.Author'
             type: array
-      security:
-      - ApiKeyAuth: []
-      summary: Finds pets by status
-      tags:
-      - pet
-  /store/inventory:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
+        "500":
+          description: Internal Server Error
           schema:
             additionalProperties:
-              type: integer
+              type: string
             type: object
-      security:
-      - ApiKeyAuth: []
-      summary: Get inventory
+      summary: List authors
       tags:
-      - store
-  /store/order:
+      - authors
     post:
       consumes:
       - application/json
       parameters:
-      - description: Order object
+      - description: Only author name
         in: body
-        name: order
+        name: author
         required: true
         schema:
-          $ref: '#/definitions/petstore_internal_models.Order'
+          $ref: '#/definitions/petstore_internal_models.CreateAuthorRequest'
       produces:
       - application/json
       responses:
-        "200":
-          description: ok
+        "201":
+          description: Created
           schema:
-            type: string
-      summary: Create order
-      tags:
-      - store
-  /store/order/{orderId}:
-    delete:
-      parameters:
-      - description: Order ID
-        in: path
-        name: orderId
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: deleted
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
           schema:
-            type: string
-      summary: Delete order
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new author
       tags:
-      - store
+      - authors
+  /authors/{id}:
     get:
+      consumes:
+      - application/json
       parameters:
-      - description: Order ID
+      - description: Author ID
         in: path
-        name: orderId
+        name: id
         required: true
         type: integer
       produces:
@@ -277,106 +163,115 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/petstore_internal_models.Order'
-      summary: Get order by ID
-      tags:
-      - store
-  /user:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: User object
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/petstore_internal_models.User'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
+            $ref: '#/definitions/petstore_internal_models.Author'
+        "400":
+          description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Create user
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get author by ID
       tags:
-      - user
-  /user/{username}:
-    delete:
+      - authors
+  /books:
+    get:
       parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
+      - description: Max items
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.ListBooksResponse'
+        "500":
+          description: Internal error
           schema:
             type: string
-      summary: Delete user
+      summary: List all books
       tags:
-      - user
-    get:
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/petstore_internal_models.User'
-      summary: Get user by username
-      tags:
-      - user
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      - description: Updated user object
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/petstore_internal_models.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update user
-      tags:
-      - user
-  /user/createWithArray:
+      - books
     post:
       consumes:
       - application/json
       parameters:
-      - description: Array of user objects
+      - description: Book payload
         in: body
-        name: users
+        name: book
         required: true
         schema:
-          items:
-            $ref: '#/definitions/petstore_internal_models.User'
-          type: array
+          $ref: '#/definitions/petstore_internal_models.CreateBookRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Add a new book
+      tags:
+      - books
+  /books/{id}:
+    get:
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.Book'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "404":
+          description: Not found
+          schema:
+            type: string
+      summary: Get book by ID
+      tags:
+      - books
+  /library/issue/{userId}/{bookId}:
+    post:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Book ID
+        in: path
+        name: bookId
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -386,47 +281,34 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create user with array
-      tags:
-      - user
-  /user/createWithList:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: List of user objects
-        in: body
-        name: users
-        required: true
-        schema:
-          items:
-            $ref: '#/definitions/petstore_internal_models.User'
-          type: array
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
+        "400":
+          description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create user with list
+            type: string
+        "404":
+          description: User or Book not found
+          schema:
+            type: string
+        "409":
+          description: Book already issued
+          schema:
+            type: string
+      summary: Issue a book to a user
       tags:
-      - user
-  /user/login:
-    get:
+      - library
+  /library/return/{userId}/{bookId}:
+    post:
       parameters:
-      - description: Username
-        in: query
-        name: username
+      - description: User ID
+        in: path
+        name: userId
         required: true
-        type: string
-      - description: Password
-        in: query
-        name: password
+        type: integer
+      - description: Book ID
+        in: path
+        name: bookId
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -437,29 +319,144 @@ paths:
               type: string
             type: object
         "400":
-          description: bad request
+          description: Bad request
           schema:
             type: string
-      summary: Login user
+        "404":
+          description: No active rental
+          schema:
+            type: string
+      summary: Return a book from a user
       tags:
-      - user
-  /user/logout:
+      - library
+  /library/top:
     get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
           schema:
+            items:
+              $ref: '#/definitions/petstore_internal_models.AuthorCount'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
             additionalProperties:
               type: string
             type: object
-      summary: Logout user
+      summary: List top authors by rentals
       tags:
-      - user
+      - library
+  /users:
+    get:
+      parameters:
+      - description: Max items
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.ListUsersResponse'
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: List users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User name only
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.User'
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "404":
+          description: not found
+          schema:
+            type: string
+      summary: Get user by ID
+      tags:
+      - users
+  /users/{id}/rentals:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.User'
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "404":
+          description: not found
+          schema:
+            type: string
+      summary: Get user with their rented books
+      tags:
+      - users
 schemes:
 - http
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

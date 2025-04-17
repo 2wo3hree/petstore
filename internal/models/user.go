@@ -1,12 +1,16 @@
 package models
 
 type User struct {
-	ID         int64  `json:"id"`
-	Username   string `json:"username"`
-	FirstName  string `json:"firstName"`
-	LastName   string `json:"lastName"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	Phone      string `json:"phone"`
-	UserStatus int    `json:"userStatus"`
+	ID          int    `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	RentedBooks []Book `json:"rented_books" db:"-"`
+}
+
+type ListUsersResponse struct {
+	Total int    `json:"total"`
+	Users []User `json:"users"`
+}
+
+type CreateUserRequest struct {
+	Name string `json:"name" example:"Иван Иванов"`
 }

@@ -4,9 +4,6 @@
 // @host localhost:8080
 // @BasePath /
 // @schemes http
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
 package main
 
 import (
