@@ -1,0 +1,465 @@
+basePath: /
+definitions:
+  petstore_internal_models.Category:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  petstore_internal_models.Order:
+    properties:
+      complete:
+        type: boolean
+      id:
+        type: integer
+      petId:
+        type: integer
+      quantity:
+        type: integer
+      shipDate:
+        type: string
+      status:
+        type: string
+    type: object
+  petstore_internal_models.Pet:
+    properties:
+      category:
+        $ref: '#/definitions/petstore_internal_models.Category'
+      id:
+        type: integer
+      name:
+        type: string
+      photoUrls:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/petstore_internal_models.Tag'
+        type: array
+    type: object
+  petstore_internal_models.Tag:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  petstore_internal_models.User:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      userStatus:
+        type: integer
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample API server for petStores.
+  title: PetStore API
+  version: "1.0"
+paths:
+  /pet:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pet object
+        in: body
+        name: pet
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.Pet'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Add a new pet to the store
+      tags:
+      - pet
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pet object
+        in: body
+        name: pet
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.Pet'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update an existing pet
+      tags:
+      - pet
+  /pet/{petId}:
+    delete:
+      parameters:
+      - description: Pet ID
+        in: path
+        name: petId
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Deletes a pet
+      tags:
+      - pet
+    get:
+      parameters:
+      - description: Pet ID
+        in: path
+        name: petId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.Pet'
+      security:
+      - ApiKeyAuth: []
+      summary: Find pet by ID
+      tags:
+      - pet
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pet ID
+        in: path
+        name: petId
+        required: true
+        type: integer
+      - description: Updated pet object
+        in: body
+        name: pet
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.Pet'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update pet by ID
+      tags:
+      - pet
+  /pet/findByStatus:
+    get:
+      parameters:
+      - description: Status value
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/petstore_internal_models.Pet'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Finds pets by status
+      tags:
+      - pet
+  /store/inventory:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get inventory
+      tags:
+      - store
+  /store/order:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Order object
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Create order
+      tags:
+      - store
+  /store/order/{orderId}:
+    delete:
+      parameters:
+      - description: Order ID
+        in: path
+        name: orderId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: deleted
+          schema:
+            type: string
+      summary: Delete order
+      tags:
+      - store
+    get:
+      parameters:
+      - description: Order ID
+        in: path
+        name: orderId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.Order'
+      summary: Get order by ID
+      tags:
+      - store
+  /user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create user
+      tags:
+      - user
+  /user/{username}:
+    delete:
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+      summary: Delete user
+      tags:
+      - user
+    get:
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/petstore_internal_models.User'
+      summary: Get user by username
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Updated user object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/petstore_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user
+      tags:
+      - user
+  /user/createWithArray:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Array of user objects
+        in: body
+        name: users
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/petstore_internal_models.User'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create user with array
+      tags:
+      - user
+  /user/createWithList:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: List of user objects
+        in: body
+        name: users
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/petstore_internal_models.User'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create user with list
+      tags:
+      - user
+  /user/login:
+    get:
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: query
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Login user
+      tags:
+      - user
+  /user/logout:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Logout user
+      tags:
+      - user
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
