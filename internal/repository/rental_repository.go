@@ -9,6 +9,6 @@ import (
 var ErrAlreadyIssued = errors.New("книга уже выдана")
 
 type RentalRepository interface {
-	Issue(ctx context.Context, userID, bookID int) (models.Rental, error)
-	Return(ctx context.Context, userID, bookID int) error
+	IssueBook(ctx context.Context, userID, bookID int) (models.Rental, error)
+	ReturnBook(ctx context.Context, userID, bookID int) error
 }

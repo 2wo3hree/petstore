@@ -17,7 +17,7 @@ func NewRentalRepo(db *pgxpool.Pool) repository.RentalRepository {
 	return &rentalRepo{db: db}
 }
 
-func (r *rentalRepo) Issue(ctx context.Context, userID, bookID int) (models.Rental, error) {
+func (r *rentalRepo) IssueBook(ctx context.Context, userID, bookID int) (models.Rental, error) {
 	const q = `
 		INSERT INTO rentals (user_id, book_id)
 		VALUES ($1, $2)
@@ -36,7 +36,7 @@ func (r *rentalRepo) Issue(ctx context.Context, userID, bookID int) (models.Rent
 	return rent, nil
 }
 
-func (r *rentalRepo) Return(ctx context.Context, userID, bookID int) error {
+func (r *rentalRepo) ReturnBook(ctx context.Context, userID, bookID int) error {
 	const q = `
 		UPDATE rentals
 		SET date_returned = NOW()

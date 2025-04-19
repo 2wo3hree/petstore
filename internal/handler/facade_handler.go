@@ -10,11 +10,11 @@ import (
 )
 
 type FacadeHandler struct {
-	facade    *facade.Facade
+	facade    facade.Facade
 	responder responder.Responder
 }
 
-func NewFacadeHandler(f *facade.Facade, r responder.Responder) *FacadeHandler {
+func NewFacadeHandler(f *facade.FacadeImp, r responder.Responder) *FacadeHandler {
 	return &FacadeHandler{facade: f, responder: r}
 }
 
@@ -32,7 +32,7 @@ func (h *FacadeHandler) IssueBook(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.Atoi(chi.URLParam(r, "userId"))
 	bookID, _ := strconv.Atoi(chi.URLParam(r, "bookId"))
 
-	rent, err := h.facade.IssueBook(r.Context(), userID, bookID)
+	rent, err := h.facade.Issue(r.Context(), userID, bookID)
 	if err != nil {
 		h.responder.Error(w, http.StatusConflict, err)
 		return
@@ -53,7 +53,7 @@ func (h *FacadeHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.Atoi(chi.URLParam(r, "userId"))
 	bookID, _ := strconv.Atoi(chi.URLParam(r, "bookId"))
 
-	if err := h.facade.ReturnBook(r.Context(), userID, bookID); err != nil {
+	if err := h.facade.Return(r.Context(), userID, bookID); err != nil {
 		h.responder.Error(w, http.StatusNotFound, err)
 		return
 	}
@@ -68,7 +68,7 @@ func (h *FacadeHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
 // @Failure   500 {object} map[string]string
 // @Router    /library/top [get]
 func (h *FacadeHandler) TopAuthors(w http.ResponseWriter, r *http.Request) {
-	top, err := h.facade.TopAuthors(r.Context())
+	top, err := h.facade.GetTopAuthors(r.Context())
 	if err != nil {
 		h.responder.Error(w, http.StatusInternalServerError, err)
 		return

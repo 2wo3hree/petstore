@@ -6,22 +6,28 @@ import (
 	"petstore/internal/service"
 )
 
-type Facade struct {
-	library service.LibraryService
+type Facade interface {
+	Issue(ctx context.Context, userID, bookID int) (models.Rental, error)
+	Return(ctx context.Context, userID, bookID int) error
+	GetTopAuthors(ctx context.Context) ([]models.AuthorCount, error)
 }
 
-func NewFacade(lib service.LibraryService) *Facade {
-	return &Facade{library: lib}
+type FacadeImp struct {
+	lib *service.LibrarySuperService
 }
 
-func (f *Facade) IssueBook(ctx context.Context, userID, bookID int) (models.Rental, error) {
-	return f.library.IssueBook(ctx, userID, bookID)
+func NewFacadeImp(lib *service.LibrarySuperService) *FacadeImp {
+	return &FacadeImp{lib: lib}
 }
 
-func (f *Facade) ReturnBook(ctx context.Context, userID, bookID int) error {
-	return f.library.ReturnBook(ctx, userID, bookID)
+func (f *FacadeImp) Issue(ctx context.Context, userID, bookID int) (models.Rental, error) {
+	return f.lib.Issue(ctx, userID, bookID)
 }
 
-func (f *Facade) TopAuthors(ctx context.Context) ([]models.AuthorCount, error) {
-	return f.library.GetTopAuthors(ctx)
+func (f *FacadeImp) Return(ctx context.Context, userID, bookID int) error {
+	return f.lib.Return(ctx, userID, bookID)
+}
+
+func (f *FacadeImp) GetTopAuthors(ctx context.Context) ([]models.AuthorCount, error) {
+	return f.lib.GetTopAuthors(ctx)
 }

@@ -41,10 +41,10 @@ func NewApp(cfg *config.Config) *App {
 	rentalService := service.NewRentalService(rentalRepo, userRepo, bookRepo)
 
 	// init super service (суперсервис)
-	libraryService := service.NewLibraryService(userService, bookService, rentalService, authorService)
+	libraryService := service.NewLibrarySuperService(userService, bookService, rentalService, authorService)
 
 	// init facade (фасад работает поверх суперсервиса)
-	libraryFacade := facade.NewFacade(libraryService)
+	libraryFacade := facade.NewFacadeImp(libraryService)
 
 	// init responder
 	resp := responder.NewJSONResponder()
