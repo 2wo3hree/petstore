@@ -2,39 +2,44 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"petstore/internal/models"
+	"petstore/internal/repository"
 )
 
 type LibrarySuperService struct {
-	users   UserService
-	books   BookService
-	rentals RentalService
-	authors AuthorService
+	users    UserService
+	books    BookService
+	authors  AuthorService
+	rentRepo repository.RentalRepository
 }
 
-func NewLibrarySuperService(u UserService, b BookService, r RentalService, a AuthorService) *LibrarySuperService {
+func NewLibrarySuperService(u UserService, b BookService, a AuthorService) *LibrarySuperService {
 	return &LibrarySuperService{
 		users:   u,
 		books:   b,
-		rentals: r,
 		authors: a,
 	}
 }
 
 func (s *LibrarySuperService) Issue(ctx context.Context, userID, bookID int) (models.Rental, error) {
-	user, err := s.users.GetByID(ctx, userID)
+	_, err := s.users.GetByID(ctx, userID)
 	if err != nil {
 		return models.Rental{}, fmt.Errorf("user not found: %w", err)
 	}
 
-	book, err := s.books.GetByID(ctx, bookID)
+	_, err = s.books.GetByID(ctx, bookID)
 	if err != nil {
 		return models.Rental{}, fmt.Errorf("book not found: %w", err)
 	}
 
-	rental, err := s.rentals.IssueBook(ctx, user.ID, book.ID)
+	// проверка, свободна ли книга, и сама аренда
+	rental, err := s.rentRepo.IssueBook(ctx, userID, bookID)
 	if err != nil {
+		if errors.Is(err, repository.ErrAlreadyIssued) {
+			return models.Rental{}, fmt.Errorf("book already issued")
+		}
 		return models.Rental{}, fmt.Errorf("failed to issue: %w", err)
 	}
 
@@ -42,7 +47,7 @@ func (s *LibrarySuperService) Issue(ctx context.Context, userID, bookID int) (mo
 }
 
 func (s *LibrarySuperService) Return(ctx context.Context, userID, bookID int) error {
-	err := s.rentals.ReturnBook(ctx, userID, bookID)
+	err := s.rentRepo.ReturnBook(ctx, userID, bookID)
 	if err != nil {
 		return fmt.Errorf("return error: %w", err)
 	}
