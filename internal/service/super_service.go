@@ -15,11 +15,12 @@ type LibrarySuperService struct {
 	rentRepo repository.RentalRepository
 }
 
-func NewLibrarySuperService(u UserService, b BookService, a AuthorService) *LibrarySuperService {
+func NewLibrarySuperService(u UserService, b BookService, a AuthorService, rent repository.RentalRepository) *LibrarySuperService {
 	return &LibrarySuperService{
-		users:   u,
-		books:   b,
-		authors: a,
+		users:    u,
+		books:    b,
+		authors:  a,
+		rentRepo: rent,
 	}
 }
 

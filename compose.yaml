@@ -14,7 +14,7 @@ services:
 
   db:
     image: postgres:15
-    container_name: pg_lib
+    container_name: pg_lib_2
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}

@@ -38,10 +38,9 @@ func NewApp(cfg *config.Config) *App {
 	userService := service.NewUserService(userRepo)
 	authorService := service.NewAuthorService(authorRepo)
 	bookService := service.NewBookService(bookRepo)
-	rentalService := service.NewRentalService(rentalRepo, userRepo, bookRepo)
 
 	// init super service (суперсервис)
-	libraryService := service.NewLibrarySuperService(userService, bookService, rentalService, authorService)
+	libraryService := service.NewLibrarySuperService(userService, bookService, authorService, rentalRepo)
 
 	// init facade (фасад работает поверх суперсервиса)
 	libraryFacade := facade.NewFacadeImp(libraryService)
