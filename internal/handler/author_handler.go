@@ -13,12 +13,12 @@ import (
 )
 
 type AuthorHandler struct {
-	svc       service.AuthorService
+	service   service.Facade
 	responder responder.Responder
 }
 
-func NewAuthorHandler(s service.AuthorService, r responder.Responder) *AuthorHandler {
-	return &AuthorHandler{svc: s, responder: r}
+func NewAuthorHandler(s service.Facade, r responder.Responder) *AuthorHandler {
+	return &AuthorHandler{service: s, responder: r}
 }
 
 // CreateAuthor godoc
@@ -38,7 +38,7 @@ func (h *AuthorHandler) CreateAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a := models.Author{Name: req.Name}
-	id, err := h.svc.Create(r.Context(), a)
+	id, err := h.service.CreateAuthor(r.Context(), a)
 	if err != nil {
 		h.responder.Error(w, http.StatusInternalServerError, err)
 		return
@@ -68,7 +68,7 @@ func (h *AuthorHandler) ListAuthors(w http.ResponseWriter, r *http.Request) {
 			offset = v
 		}
 	}
-	list, _, err := h.svc.List(r.Context(), limit, offset)
+	list, _, err := h.service.ListAuthors(r.Context(), limit, offset)
 	if err != nil {
 		h.responder.Error(w, http.StatusInternalServerError, err)
 		return
@@ -92,10 +92,26 @@ func (h *AuthorHandler) GetAuthor(w http.ResponseWriter, r *http.Request) {
 		h.responder.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	a, err := h.svc.GetByID(r.Context(), id)
+	a, err := h.service.GetAuthorByID(r.Context(), id)
 	if err != nil {
 		h.responder.Error(w, http.StatusNotFound, err)
 		return
 	}
 	h.responder.JSON(w, http.StatusOK, a)
+}
+
+// @Summary   List top authors by rentals
+// @Tags      library
+// @Accept    json
+// @Produce   json
+// @Success   200 {array} models.AuthorCount
+// @Failure   500 {object} map[string]string
+// @Router    /library/top [get]
+func (h *AuthorHandler) TopAuthors(w http.ResponseWriter, r *http.Request) {
+	top, err := h.service.GetTopAuthors(r.Context())
+	if err != nil {
+		h.responder.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	h.responder.JSON(w, http.StatusOK, top)
 }

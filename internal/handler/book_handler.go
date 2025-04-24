@@ -11,11 +11,11 @@ import (
 )
 
 type BookHandler struct {
-	service   service.BookService
+	service   service.Facade
 	responder responder.Responder
 }
 
-func NewBookHandler(s service.BookService, r responder.Responder) *BookHandler {
+func NewBookHandler(s service.Facade, r responder.Responder) *BookHandler {
 	return &BookHandler{
 		service:   s,
 		responder: r,
@@ -38,7 +38,7 @@ func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
 		h.responder.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	id, err := h.service.Create(r.Context(), models.Book{
+	id, err := h.service.CreateBook(r.Context(), models.Book{
 		Title:    req.Title,
 		AuthorID: req.AuthorID,
 	})
@@ -74,7 +74,7 @@ func (h *BookHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	books, total, err := h.service.List(r.Context(), limit, offset)
+	books, total, err := h.service.ListBooks(r.Context(), limit, offset)
 	if err != nil {
 		h.responder.Error(w, http.StatusInternalServerError, err)
 		return
@@ -98,10 +98,52 @@ func (h *BookHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		h.responder.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	book, err := h.service.GetByID(r.Context(), id)
+	book, err := h.service.GetBookByID(r.Context(), id)
 	if err != nil {
 		h.responder.Error(w, http.StatusNotFound, err)
 		return
 	}
 	h.responder.JSON(w, http.StatusOK, book)
+}
+
+// @Summary Return a book from a user
+// @Tags library
+// @Produce json
+// @Param userId path int true "User ID"
+// @Param bookId path int true "Book ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {string} string "No active rental"
+// @Router /library/return/{userId}/{bookId} [post]
+func (h *BookHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
+	userID, _ := strconv.Atoi(chi.URLParam(r, "userId"))
+	bookID, _ := strconv.Atoi(chi.URLParam(r, "bookId"))
+
+	if err := h.service.Return(r.Context(), userID, bookID); err != nil {
+		h.responder.Error(w, http.StatusNotFound, err)
+		return
+	}
+	h.responder.JSON(w, http.StatusOK, map[string]string{"message": "returned"})
+}
+
+// @Summary Issue a book to a user
+// @Tags library
+// @Produce json
+// @Param userId path int true "User ID"
+// @Param bookId path int true "Book ID"
+// @Success 201 {object} map[string]string
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {string} string "User or Book not found"
+// @Failure 409 {string} string "Book already issued"
+// @Router /library/issue/{userId}/{bookId} [post]
+func (h *BookHandler) IssueBook(w http.ResponseWriter, r *http.Request) {
+	userID, _ := strconv.Atoi(chi.URLParam(r, "userId"))
+	bookID, _ := strconv.Atoi(chi.URLParam(r, "bookId"))
+
+	rent, err := h.service.Issue(r.Context(), userID, bookID)
+	if err != nil {
+		h.responder.Error(w, http.StatusConflict, err)
+		return
+	}
+	h.responder.JSON(w, http.StatusCreated, rent)
 }

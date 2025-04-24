@@ -18,7 +18,7 @@ import (
 //	})
 //}
 
-func SetupRouter(userHandler *handler.UserHandler, authorHandler *handler.AuthorHandler, bookHandler *handler.BookHandler, facadeHandler *handler.FacadeHandler) *chi.Mux {
+func SetupRouter(userHandler *handler.UserHandler, authorHandler *handler.AuthorHandler, bookHandler *handler.BookHandler) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
@@ -60,9 +60,9 @@ func SetupRouter(userHandler *handler.UserHandler, authorHandler *handler.Author
 	})
 
 	r.Route("/library", func(r chi.Router) {
-		r.Post("/issue/{userId}/{bookId}", facadeHandler.IssueBook)
-		r.Post("/return/{userId}/{bookId}", facadeHandler.ReturnBook)
-		r.Get("/top", facadeHandler.TopAuthors)
+		r.Post("/issue/{userId}/{bookId}", bookHandler.IssueBook)
+		r.Post("/return/{userId}/{bookId}", bookHandler.ReturnBook)
+		r.Get("/top", authorHandler.TopAuthors)
 	})
 
 	// Swagger UI

@@ -13,11 +13,11 @@ import (
 )
 
 type UserHandler struct {
-	service   service.UserService
+	service   service.Facade
 	responder responder.Responder
 }
 
-func NewUserHandler(s service.UserService, r responder.Responder) *UserHandler {
+func NewUserHandler(s service.Facade, r responder.Responder) *UserHandler {
 	return &UserHandler{service: s, responder: r}
 }
 
@@ -36,7 +36,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		h.responder.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	id, err := h.service.Create(r.Context(), models.User{Name: req.Name})
+	id, err := h.service.CreateUser(r.Context(), models.User{Name: req.Name})
 	if err != nil {
 		h.responder.Error(w, http.StatusInternalServerError, err)
 		return
@@ -65,7 +65,7 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	users, total, err := h.service.List(r.Context(), limit, offset)
+	users, total, err := h.service.ListUsers(r.Context(), limit, offset)
 	if err != nil {
 		h.responder.Error(w, http.StatusInternalServerError, err)
 		return
@@ -98,7 +98,7 @@ func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		h.responder.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	u, err := h.service.GetByID(r.Context(), id)
+	u, err := h.service.GetUserByID(r.Context(), id)
 	if err != nil {
 		h.responder.Error(w, http.StatusNotFound, err)
 		return
